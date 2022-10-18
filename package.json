@@ -12,11 +12,13 @@
     "start": "gatsby develop",
     "build": "gatsby build",
     "serve": "gatsby serve",
-    "clean": "gatsby clean"
+    "clean": "gatsby clean",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "gatsby": "next",
     "gatsby-source-filesystem": "^4.24.0",
+    "patch-package": "^6.4.7",
     "react": "^18.1.0",
     "react-dom": "^18.1.0"
   }

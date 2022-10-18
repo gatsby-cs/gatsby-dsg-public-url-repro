@@ -1,0 +1,44 @@
+diff --git a/node_modules/gatsby/dist/schema/graphql-engine/bundle-webpack.js b/node_modules/gatsby/dist/schema/graphql-engine/bundle-webpack.js
+index 71dca09..1139810 100644
+--- a/node_modules/gatsby/dist/schema/graphql-engine/bundle-webpack.js
++++ b/node_modules/gatsby/dist/schema/graphql-engine/bundle-webpack.js
+@@ -87,7 +87,9 @@ async function createGraphqlEngineBundle(rootDir, reporter, isVerbose) {
+       }
+ 
+       return acc;
+-    }, {})],
++    }, {
++      "fs-extra": `global _actualFsExtraWrapper`,
++    })],
+     module: {
+       rules: [{
+         oneOf: [{
+@@ -166,7 +168,8 @@ async function createGraphqlEngineBundle(rootDir, reporter, isVerbose) {
+       "process.env.GATSBY_SKIP_WRITING_SCHEMA_TO_FILE": `true`,
+       "process.env.NODE_ENV": JSON.stringify(`production`),
+       SCHEMA_SNAPSHOT: JSON.stringify(schemaSnapshotString),
+-      "process.env.GATSBY_LOGGER": JSON.stringify(`yurnalist`)
++      "process.env.GATSBY_LOGGER": JSON.stringify(`yurnalist`),
++      "process.env.GATSBY_SLICES": JSON.stringify(!!process.env.GATSBY_SLICES)
+     }), ((_process$env$GATSBY_W = process.env.GATSBY_WEBPACK_LOGGING) === null || _process$env$GATSBY_W === void 0 ? void 0 : _process$env$GATSBY_W.includes(`query-engine`)) && new _webpackLogging.WebpackLoggingPlugin(rootDir, reporter, isVerbose)].filter(Boolean)
+   });
+   return new Promise((resolve, reject) => {
+diff --git a/node_modules/gatsby/dist/utils/engines-fs-provider.js b/node_modules/gatsby/dist/utils/engines-fs-provider.js
+index 3cb7a2a..7c0d922 100644
+--- a/node_modules/gatsby/dist/utils/engines-fs-provider.js
++++ b/node_modules/gatsby/dist/utils/engines-fs-provider.js
+@@ -11,9 +11,14 @@ exports.__esModule = true;
+ // eslint-disable-next-line @typescript-eslint/naming-convention
+ if (global._fsWrapper) {
+   global._actualFsWrapper = global._fsWrapper;
++  global._actualFsExtraWrapper = {
++    ...__non_webpack_require__(`fs-extra`),
++    copySync: global._fsWrapper.copySync,
++  }
+ } else {
+   // fs alternative not provided - falling back to regular fs
+   global._actualFsWrapper = __non_webpack_require__(`fs`);
++  global._actualFsExtraWrapper = __non_webpack_require__(`fs-extra`)
+ } // hydrate webpack module cache (consume global, so it's not lazy)
+ 
+ 
