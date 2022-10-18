@@ -1,8 +1,8 @@
 {
-  "name": "g",
+  "name": "gatsby-dsg-public-url-repro",
   "version": "1.0.0",
   "private": true,
-  "description": "g",
+  "description": "gatsby-dsg-public-url-repro",
   "author": "tyhopp",
   "keywords": [
     "gatsby"
@@ -15,7 +15,8 @@
     "clean": "gatsby clean"
   },
   "dependencies": {
-    "gatsby": "^4.23.0",
+    "gatsby": "next",
+    "gatsby-source-filesystem": "^4.24.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0"
   }

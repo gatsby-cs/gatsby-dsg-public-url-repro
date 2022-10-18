@@ -1,7 +1,15 @@
 module.exports = {
   siteMetadata: {
-    title: `g`,
+    title: `gatsby-dsg-public-url-repro`,
     siteUrl: `https://www.yourdomain.tld`,
   },
-  plugins: [],
+  plugins: [
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `images`,
+        path: `${__dirname}/src/images`,
+      },
+    },
+  ],
 };
