@@ -54,3 +54,15 @@ index 3cb7a2a..e3c9e15 100644
 +require(`fs-extra`)
  //# sourceMappingURL=engines-fs-provider.js.map
 \ No newline at end of file
+diff --git a/node_modules/gatsby/dist/utils/page-ssr-module/bundle-webpack.js b/node_modules/gatsby/dist/utils/page-ssr-module/bundle-webpack.js
+index 9ea1a6b..a3c613d 100644
+--- a/node_modules/gatsby/dist/utils/page-ssr-module/bundle-webpack.js
++++ b/node_modules/gatsby/dist/utils/page-ssr-module/bundle-webpack.js
+@@ -127,6 +127,7 @@ async function createPageSSRBundle({
+     resolve: {
+       extensions,
+       alias: {
++        "actual-fs-extra": `fs-extra`,
+         ".cache": `${rootDir}/.cache/`,
+         [require.resolve(`gatsby-cli/lib/reporter/loggers/ink/index.js`)]: false,
+         inquirer: false
