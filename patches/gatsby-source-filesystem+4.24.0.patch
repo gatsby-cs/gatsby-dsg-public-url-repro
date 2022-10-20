@@ -1,5 +1,5 @@
 diff --git a/node_modules/gatsby-source-filesystem/extend-file-node.js b/node_modules/gatsby-source-filesystem/extend-file-node.js
-index 6398ae2..14b9968 100644
+index 6398ae2..0835b8d 100644
 --- a/node_modules/gatsby-source-filesystem/extend-file-node.js
 +++ b/node_modules/gatsby-source-filesystem/extend-file-node.js
 @@ -34,18 +34,33 @@ module.exports = ({
@@ -26,7 +26,7 @@ index 6398ae2..14b9968 100644
 +            console.log(`steps: 3`)
 +            fs.ensureDirSync(ensuredDir);
 +            console.log(`steps: 4`)
-+            fs.writeFileSync(publicPath, fileUTF);
++            fs.writeFileSync(publicPath, file.toString());
 +            console.log(`steps: 5`)
 +          } catch (error) {
 +            console.log(`error type`, typeof error)
