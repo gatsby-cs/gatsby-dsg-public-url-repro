@@ -1,0 +1,569 @@
+diff --git a/node_modules/gatsby-cli/CHANGELOG.md b/node_modules/gatsby-cli/CHANGELOG.md
+index e2ee9ed..f4bae0b 100644
+--- a/node_modules/gatsby-cli/CHANGELOG.md
++++ b/node_modules/gatsby-cli/CHANGELOG.md
+@@ -3,6 +3,24 @@
+ All notable changes to this project will be documented in this file.
+ See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+ 
++## [4.24.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-cli@4.24.0/packages/gatsby-cli) (2022-09-27)
++
++[🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.24)
++
++#### Features
++
++- add partial hydration [#36485](https://github.com/gatsbyjs/gatsby/issues/36485) ([c073bbe](https://github.com/gatsbyjs/gatsby/commit/c073bbea40379adc62bd891da9f65ff2756b120b))
++
++#### Chores
++
++- More Node 18 bumps [#36640](https://github.com/gatsbyjs/gatsby/issues/36640) ([5b3b565](https://github.com/gatsbyjs/gatsby/commit/5b3b565229d89a7e440898ba4b8652ee852091c7))
++- Fix run script glossary link Fix [#36636](https://github.com/gatsbyjs/gatsby/issues/36636) ([c500314](https://github.com/gatsbyjs/gatsby/commit/c500314cabc40e0ac4975f7a4d1a27b7bfb124df))
++- Improve Gatsby CLI reference doc [#36619](https://github.com/gatsbyjs/gatsby/issues/36619) ([71e81fc](https://github.com/gatsbyjs/gatsby/commit/71e81fca1c5dd2408fa5932149218993ef65d40d))
++
++### [4.23.1](https://github.com/gatsbyjs/gatsby/commits/gatsby-cli@4.23.1/packages/gatsby-cli) (2022-09-22)
++
++**Note:** Version bump only for package gatsby-cli
++
+ ## [4.23.0](https://github.com/gatsbyjs/gatsby/commits/gatsby-cli@4.23.0/packages/gatsby-cli) (2022-09-13)
+ 
+ [🧾 Release notes](https://www.gatsbyjs.com/docs/reference/release-notes/v4.23)
+diff --git a/node_modules/gatsby-cli/lib/index.js b/node_modules/gatsby-cli/lib/index.js
+index 51dcc92..e515167 100755
+--- a/node_modules/gatsby-cli/lib/index.js
++++ b/node_modules/gatsby-cli/lib/index.js
+@@ -37,7 +37,7 @@ if (_os.default.platform() === `win32`) {
+   isGlobal: true
+ }); // @ts-ignore - TODO: Remove _CFLAGS_ again
+ 
+-const MIN_NODE_VERSION = "4" === `5` ? `18.0.0` : `14.15.0`; // const NEXT_MIN_NODE_VERSION = `10.13.0`
++const MIN_NODE_VERSION = "5" === `5` ? `18.0.0` : `14.15.0`; // const NEXT_MIN_NODE_VERSION = `10.13.0`
+ 
+ const {
+   version
+diff --git a/node_modules/gatsby-cli/lib/reporter/loggers/ink/index.js b/node_modules/gatsby-cli/lib/reporter/loggers/ink/index.js
+index 16b397e..0429e6e 100644
+--- a/node_modules/gatsby-cli/lib/reporter/loggers/ink/index.js
++++ b/node_modules/gatsby-cli/lib/reporter/loggers/ink/index.js
+@@ -12508,21 +12508,6 @@ const StoreStateProvider = ({
+   }, children);
+ };
+ 
+-function _defineProperty(obj, key, value) {
+-  if (key in obj) {
+-    Object.defineProperty(obj, key, {
+-      value: value,
+-      enumerable: true,
+-      configurable: true,
+-      writable: true
+-    });
+-  } else {
+-    obj[key] = value;
+-  }
+-
+-  return obj;
+-}
+-
+ function _extends() {
+   _extends = Object.assign ? Object.assign.bind() : function (target) {
+     for (var i = 1; i < arguments.length; i++) {
+@@ -13120,12 +13105,12 @@ const File = ({
+   filePath,
+   location
+ }) => {
+-  const lineNumber = location === null || location === void 0 ? void 0 : location.start.line;
++  const lineNumber = location?.start.line;
+   let locString = ``;
+ 
+   if (typeof lineNumber !== `undefined`) {
+     locString += `:${lineNumber}`;
+-    const columnNumber = location === null || location === void 0 ? void 0 : location.start.column;
++    const columnNumber = location?.start.column;
+ 
+     if (typeof columnNumber !== `undefined`) {
+       locString += `:${columnNumber}`;
+@@ -13250,15 +13235,13 @@ const Develop = ({
+ };
+ 
+ const ConnectedDevelop = () => {
+-  var _state$pages, _state$program, _state$logs;
+-
+   const state = react.useContext(StoreStateContext);
+   return /*#__PURE__*/react.createElement(Develop // @ts-ignore - program exists on state but we should refactor this
+   , {
+-    pagesCount: ((_state$pages = state.pages) === null || _state$pages === void 0 ? void 0 : _state$pages.size) || 0 // @ts-ignore - program exists on state but we should refactor this
++    pagesCount: state.pages?.size || 0 // @ts-ignore - program exists on state but we should refactor this
+     ,
+-    appName: ((_state$program = state.program) === null || _state$program === void 0 ? void 0 : _state$program.sitePackageJson.name) || ``,
+-    status: ((_state$logs = state.logs) === null || _state$logs === void 0 ? void 0 : _state$logs.status) || ``
++    appName: state.program?.sitePackageJson.name || ``,
++    status: state.logs?.status || ``
+   });
+ };
+ 
+@@ -13337,7 +13320,8 @@ const ComponentTree = function ComponentTree({
+ 
+ const PageTree = function PageTree({
+   components,
+-  root
++  root,
++  slices
+ }) {
+   const componentList = [];
+   let i = 0;
+@@ -13360,7 +13344,16 @@ const PageTree = function PageTree({
+     paddingBottom: 1
+   }, /*#__PURE__*/react.createElement(build.Text, {
+     underline: true
+-  }, "Pages")), componentList, /*#__PURE__*/react.createElement(Description, {
++  }, "Pages")), componentList, slices.size > 0 && /*#__PURE__*/react.createElement(react.Fragment, null, /*#__PURE__*/react.createElement(build.Box, {
++    paddingTop: 1,
++    paddingBottom: 1
++  }, /*#__PURE__*/react.createElement(build.Text, {
++    underline: true
++  }, "Slices")), Array.from(slices).map(slice => /*#__PURE__*/react.createElement(build.Box, {
++    key: slice
++  }, /*#__PURE__*/react.createElement(build.Text, null, /*#__PURE__*/react.createElement(build.Text, {
++    bold: true
++  }, "\xB7"), " ", path__default["default"].posix.relative(root, slice))))), /*#__PURE__*/react.createElement(Description, {
+     marginTop: 1,
+     marginBottom: 1
+   }));
+@@ -13369,10 +13362,12 @@ const PageTree = function PageTree({
+ const ConnectedPageTree = function ConnectedPageTree() {
+   const state = react.useContext(StoreStateContext);
+   const componentWithPages = new Map();
++  const slices = new Set();
+ 
+   for (const {
+     componentPath,
+-    pages
++    pages,
++    isSlice
+   } of state.pageTree.components.values()) {
+     const layoutComponent = parseComponentPath.getPathToLayoutComponent(componentPath);
+     const pagesByMode = componentWithPages.get(layoutComponent) || {
+@@ -13381,11 +13376,16 @@ const ConnectedPageTree = function ConnectedPageTree() {
+       SSR: new Set(),
+       FN: new Set()
+     };
+-    pages.forEach(pagePath => {
+-      const gatsbyPage = state.pageTree.pages.get(pagePath);
+-      pagesByMode[gatsbyPage.mode].add(pagePath);
+-    });
+-    componentWithPages.set(layoutComponent, pagesByMode);
++
++    if (isSlice) {
++      slices.add(componentPath);
++    } else {
++      pages.forEach(pagePath => {
++        const gatsbyPage = state.pageTree.pages.get(pagePath);
++        pagesByMode[gatsbyPage.mode].add(pagePath);
++      });
++      componentWithPages.set(layoutComponent, pagesByMode);
++    }
+   }
+ 
+   for (const {
+@@ -13402,6 +13402,7 @@ const ConnectedPageTree = function ConnectedPageTree() {
+ 
+   return /*#__PURE__*/react.createElement(PageTree, {
+     components: componentWithPages,
++    slices: slices,
+     root: state.pageTree.root
+   });
+ };
+@@ -13409,15 +13410,10 @@ const ConnectedPageTree = function ConnectedPageTree() {
+ const showProgress = isTTY();
+ 
+ class CLI extends react.Component {
+-  constructor(...args) {
+-    super(...args);
+-
+-    _defineProperty(this, "state", {
+-      hasError: false
+-    });
+-
+-    _defineProperty(this, "memoizedReactElementsForMessages", []);
+-  }
++  state = {
++    hasError: false
++  };
++  memoizedReactElementsForMessages = [];
+ 
+   componentDidCatch(error, info) {
+     gatsbyTelemetry.trackBuildError(`INK`, {
+@@ -13507,12 +13503,10 @@ class CLI extends react.Component {
+ }
+ 
+ const ConnectedCLI = () => {
+-  var _state$program, _state$program$_, _state$program2;
+-
+   const state = react.useContext(StoreStateContext);
+   const showStatusBar = // @ts-ignore - program exists on state but we should refactor this
+-  ((_state$program = state.program) === null || _state$program === void 0 ? void 0 : (_state$program$_ = _state$program._) === null || _state$program$_ === void 0 ? void 0 : _state$program$_[0]) === `develop` && // @ts-ignore - program exists on state but we should refactor this
+-  ((_state$program2 = state.program) === null || _state$program2 === void 0 ? void 0 : _state$program2.status) === `BOOTSTRAP_FINISHED`;
++  state.program?._?.[0] === `develop` && // @ts-ignore - program exists on state but we should refactor this
++  state.program?.status === `BOOTSTRAP_FINISHED`;
+   const showPageTree = !!state.pageTree;
+   return /*#__PURE__*/react.createElement(CLI, {
+     showStatusBar: Boolean(showStatusBar),
+diff --git a/node_modules/gatsby-cli/lib/reporter/loggers/yurnalist/index.js b/node_modules/gatsby-cli/lib/reporter/loggers/yurnalist/index.js
+index e8d1581..141b00a 100644
+--- a/node_modules/gatsby-cli/lib/reporter/loggers/yurnalist/index.js
++++ b/node_modules/gatsby-cli/lib/reporter/loggers/yurnalist/index.js
+@@ -26,10 +26,12 @@ var _parseComponentPath = require("gatsby-core-utils/parse-component-path");
+ function generatePageTreeToConsole(yurnalist, state) {
+   const root = state.root;
+   const componentWithPages = new Map();
++  const slices = new Set();
+ 
+   for (const {
+     componentPath,
+-    pages
++    pages,
++    isSlice
+   } of state.components.values()) {
+     const layoutComponent = (0, _parseComponentPath.getPathToLayoutComponent)(componentPath);
+ 
+@@ -41,12 +43,17 @@ function generatePageTreeToConsole(yurnalist, state) {
+       SSR: new Set(),
+       FN: new Set()
+     };
+-    pages.forEach(pagePath => {
+-      const gatsbyPage = state.pages.get(pagePath); // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+ 
+-      pagesByMode[gatsbyPage.mode].add(pagePath);
+-    });
+-    componentWithPages.set(relativePath, pagesByMode);
++    if (isSlice) {
++      slices.add(_path.default.posix.relative(root, componentPath));
++    } else {
++      pages.forEach(pagePath => {
++        const gatsbyPage = state.pages.get(pagePath); // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
++
++        pagesByMode[gatsbyPage.mode].add(pagePath);
++      });
++      componentWithPages.set(relativePath, pagesByMode);
++    }
+   }
+ 
+   for (const {
+@@ -86,6 +93,14 @@ function generatePageTreeToConsole(yurnalist, state) {
+     i++;
+   }
+ 
++  if (slices.size > 0) {
++    pageTreeConsole.push(``);
++    pageTreeConsole.push(`\n${_chalk.default.underline(`Slices`)}\n`);
++    Array.from(slices).forEach(slice => {
++      pageTreeConsole.push(`· ${slice}`);
++    });
++  }
++
+   pageTreeConsole.push(``);
+   pageTreeConsole.push((0, _boxen.default)([`  (SSG) Generated at build time`, `D (DSG) Deferred static generation - page generated at runtime`, `∞ (SSR) Server-side renders at runtime (uses getServerData)`, `λ (Function) Gatsby function`].join(`\n`), {
+     padding: 1,
+diff --git a/node_modules/gatsby-cli/lib/reporter/types.d.ts b/node_modules/gatsby-cli/lib/reporter/types.d.ts
+index 7647d97..6f3469a 100644
+--- a/node_modules/gatsby-cli/lib/reporter/types.d.ts
++++ b/node_modules/gatsby-cli/lib/reporter/types.d.ts
+@@ -44,6 +44,7 @@ declare type PageMode = "SSG" | "DSG" | "SSR";
+ interface IGatsbyPageComponent {
+     componentPath: string;
+     pages: Set<string>;
++    isSlice: boolean;
+ }
+ interface IGatsbyPage {
+     mode: PageMode;
+diff --git a/node_modules/gatsby-cli/lib/structured-errors/construct-error.js b/node_modules/gatsby-cli/lib/structured-errors/construct-error.js
+index 837393e..7713bad 100644
+--- a/node_modules/gatsby-cli/lib/structured-errors/construct-error.js
++++ b/node_modules/gatsby-cli/lib/structured-errors/construct-error.js
+@@ -52,8 +52,11 @@ const constructError = ({
+   } = _errorSchema.errorSchema.validate(structuredError);
+ 
+   if (error) {
+-    console.log(`Failed to validate error`, error);
+-    process.exit(1);
++    console.trace(`validation error stack trace`)
++    console.log(`Failed to validate error`, error, structuredError);
++
++    return null
++    // process.exit(1);
+   }
+ 
+   return structuredError;
+diff --git a/node_modules/gatsby-cli/lib/structured-errors/error-map.d.ts b/node_modules/gatsby-cli/lib/structured-errors/error-map.d.ts
+index 5b2e317..0b4a69e 100644
+--- a/node_modules/gatsby-cli/lib/structured-errors/error-map.d.ts
++++ b/node_modules/gatsby-cli/lib/structured-errors/error-map.d.ts
+@@ -245,11 +245,13 @@ declare const errors: {
+         text: (context: any) => string;
+         level: Level;
+         category: ErrorCategory;
++        docsUrl: string;
+     };
+     "11323": {
+         text: (context: any) => string;
+         level: Level;
+         category: ErrorCategory;
++        docsUrl: string;
+     };
+     "11324": {
+         text: (context: any) => string;
+@@ -259,21 +261,25 @@ declare const errors: {
+         text: (context: any) => string;
+         level: Level;
+         category: ErrorCategory;
++        docsUrl: string;
+     };
+     "11326": {
+         text: (context: any) => string;
+         level: Level;
+         category: ErrorCategory;
++        docsUrl: string;
+     };
+     "11327": {
+         text: (context: any) => string;
+         level: Level;
+         category: ErrorCategory;
++        docsUrl: string;
+     };
+     "11328": {
+         text: (context: any) => string;
+         level: Level;
+         category: ErrorCategory;
++        docsUrl: string;
+     };
+     "11329": {
+         text: (context: any) => string;
+@@ -298,6 +304,54 @@ declare const errors: {
+         category: ErrorCategory;
+         docsUrl: string;
+     };
++    "11333": {
++        text: (context: any) => string;
++        level: Level;
++        category: ErrorCategory;
++        docsUrl: string;
++    };
++    "11334": {
++        text: (context: any) => string;
++        level: Level;
++        category: ErrorCategory;
++        docsUrl: string;
++    };
++    "11335": {
++        text: (context: any) => string;
++        level: Level;
++        category: ErrorCategory;
++        docsUrl: string;
++    };
++    "11336": {
++        text: (context: any) => string;
++        level: Level;
++        category: ErrorCategory;
++        docsUrl: string;
++    };
++    "11337": {
++        text: (context: any) => string;
++        level: Level;
++        category: ErrorCategory;
++        docsUrl: string;
++    };
++    "11338": {
++        text: (context: any) => string;
++        level: Level;
++        category: ErrorCategory;
++        docsUrl: string;
++    };
++    "11339": {
++        text: (context: any) => string;
++        level: Level;
++        category: ErrorCategory;
++        docsUrl: string;
++    };
++    "11340": {
++        text: (context: any) => string;
++        level: Level;
++        category: ErrorCategory;
++        docsUrl: string;
++    };
+     "11467": {
+         text: (context: any) => string;
+         level: Level;
+@@ -434,6 +488,12 @@ declare const errors: {
+         docsUrl: string;
+         category: ErrorCategory;
+     };
++    "80001": {
++        text: () => string;
++        level: Level;
++        docsUrl: string;
++        category: ErrorCategory;
++    };
+ };
+ export declare type ErrorId = string | keyof typeof errors;
+ export declare const errorMap: Record<ErrorId, IErrorMapEntry>;
+diff --git a/node_modules/gatsby-cli/lib/structured-errors/error-map.js b/node_modules/gatsby-cli/lib/structured-errors/error-map.js
+index 850a5f9..f24c00f 100644
+--- a/node_modules/gatsby-cli/lib/structured-errors/error-map.js
++++ b/node_modules/gatsby-cli/lib/structured-errors/error-map.js
+@@ -29,7 +29,7 @@ const errors = {
+     level: _types.Level.ERROR
+   },
+   "95312": {
+-    text: context => `"${context.ref}" is not available during Server-Side Rendering. Enable "DEV_SSR" to debug this during "gatsby develop".`,
++    text: context => `"${context.undefinedGlobal}" is not available during server-side rendering. Enable "DEV_SSR" to debug this during "gatsby develop".`,
+     level: _types.Level.ERROR,
+     docsUrl: `https://gatsby.dev/debug-html`,
+     category: ErrorCategory.USER
+@@ -338,38 +338,44 @@ const errors = {
+     level: _types.Level.ERROR
+   },
+   "11322": {
+-    text: context => `${context.pluginName} created a page and didn't pass the path to the component.\n\nThe page object passed to createPage:\n${JSON.stringify(context.pageObject, null, 4)}\n\nSee the documentation for the "createPage" action — https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`,
++    text: context => `${context.pluginName} created a page and didn't pass the path to the component.\n\nThe page object passed to createPage:\n${JSON.stringify(context.input, null, 4)}`,
+     level: _types.Level.ERROR,
+-    category: ErrorCategory.USER
++    category: ErrorCategory.USER,
++    docsUrl: `https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`
+   },
+   "11323": {
+-    text: context => `${context.pluginName} must set the page path when creating a page.\n\nThe page object passed to createPage:\n${JSON.stringify(context.pageObject, null, 4)}\n\nSee the documentation for the "createPage" action — https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`,
++    text: context => `${context.pluginName} must set the page path when creating a page.\n\nThe page object passed to createPage:\n${JSON.stringify(context.pageObject, null, 4)}`,
+     level: _types.Level.ERROR,
+-    category: ErrorCategory.USER
++    category: ErrorCategory.USER,
++    docsUrl: `https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`
+   },
+   "11324": {
+     text: context => `${context.message}\n\nSee the documentation for the "createPage" action — https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`,
+     level: _types.Level.ERROR
+   },
+   "11325": {
+-    text: context => `${context.pluginName} created a page with a component that doesn't exist.\n\nThe path to the missing component is "${context.component}"\n\nThe page object passed to createPage:\n${JSON.stringify(context.pageObject, null, 4)}\n\nSee the documentation for the "createPage" action — https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`,
++    text: context => `${context.pluginName} created a page with a component that doesn't exist.\n\nThe path to the missing component is "${context.componentPath}"\n\nThe page object passed to createPage:\n${JSON.stringify(context.input, null, 4)}`,
+     level: _types.Level.ERROR,
+-    category: ErrorCategory.USER
++    category: ErrorCategory.USER,
++    docsUrl: `https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`
+   },
+   "11326": {
+-    text: context => `${context.pluginName} must set the absolute path to the page component when create creating a page.\n\nThe (relative) path you used for the component is "${context.component}"\n\nYou can convert a relative path to an absolute path by requiring the path module and calling path.resolve() e.g.\n\nconst path = require("path")\npath.resolve("${context.component}")\n\nThe page object passed to createPage:\n${JSON.stringify(context.pageObject, null, 4)}\n\nSee the documentation for the "createPage" action — https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`,
++    text: context => `${context.pluginName} must set the absolute path to the page component when creating a page.\n\nThe (relative) path you used for the component is "${context.componentPath}"\n\nYou can convert a relative path to an absolute path by requiring the path module and calling path.resolve() e.g.\n\nconst path = require("path")\npath.resolve("${context.componentPath}")\n\nThe page object passed to createPage:\n${JSON.stringify(context.input, null, 4)}`,
+     level: _types.Level.ERROR,
+-    category: ErrorCategory.USER
++    category: ErrorCategory.USER,
++    docsUrl: `https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`
+   },
+   "11327": {
+-    text: context => `You have an empty file in the "src/pages" directory at "${context.relativePath}". Please remove it or make it a valid component`,
++    text: context => `An empty file "${context.componentPath}" was found during page creation. Please remove it or make it a valid component.`,
+     level: _types.Level.ERROR,
+-    category: ErrorCategory.USER
++    category: ErrorCategory.USER,
++    docsUrl: `https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`
+   },
+   "11328": {
+-    text: context => `A page component must export a React component for it to be valid. Please make sure this file exports a React component:\n\n${context.fileName}`,
++    text: context => `${context.pluginName} created a page without a valid default export.\n\nThe path to the page is "${context.componentPath}". If your page is a named export, please use "export default" instead.`,
+     level: _types.Level.ERROR,
+-    category: ErrorCategory.USER
++    category: ErrorCategory.USER,
++    docsUrl: `https://www.gatsbyjs.com/docs/reference/config-files/actions#createPage`
+   },
+   // invalid or deprecated APIs
+   "11329": {
+@@ -407,6 +413,63 @@ const errors = {
+     category: ErrorCategory.USER,
+     docsUrl: `https://www.gatsbyjs.com/docs/reference/functions/`
+   },
++  // slices
++  "11333": {
++    text: context => `${context.pluginName} created a slice and didn't pass the path to the component.\n\nThe slice object passed to createSlice:\n${JSON.stringify(context.input, null, 4)}`,
++    level: _types.Level.ERROR,
++    category: ErrorCategory.USER,
++    // TODO: change domain to gatsbyjs.com when it's released
++    docsUrl: `https://v5.gatsbyjs.com/docs/reference/config-files/actions#createSlice`
++  },
++  "11334": {
++    text: context => `${context.pluginName} must set the slice id when creating a slice.\n\nThe slice object passed to createSlice:\n${JSON.stringify(context.sliceObject, null, 4)}`,
++    level: _types.Level.ERROR,
++    category: ErrorCategory.USER,
++    // TODO: change domain to gatsbyjs.com when it's released
++    docsUrl: `https://v5.gatsbyjs.com/docs/reference/config-files/actions#createSlice`
++  },
++  "11335": {
++    text: context => `${context.pluginName} must set the absolute path to the slice component when creating a slice.\n\nThe (relative) path you used for the component is "${context.componentPath}"\n\nYou can convert a relative path to an absolute path by requiring the path module and calling path.resolve() e.g.\n\nconst path = require("path")\npath.resolve("${context.componentPath}")\n\nThe object passed to createSlice:\n${JSON.stringify(context.input, null, 4)}`,
++    level: _types.Level.ERROR,
++    category: ErrorCategory.USER,
++    // TODO: change domain to gatsbyjs.com when it's released
++    docsUrl: `https://v5.gatsbyjs.com/docs/reference/config-files/actions#createSlice`
++  },
++  "11336": {
++    text: context => `${context.pluginName} created a slice with a component that doesn't exist.\n\nThe path to the missing component is "${context.componentPath}"\n\nThe slice object passed to createSlice:\n${JSON.stringify(context.input, null, 4)}`,
++    level: _types.Level.ERROR,
++    category: ErrorCategory.USER,
++    // TODO: change domain to gatsbyjs.com when it's released
++    docsUrl: `https://v5.gatsbyjs.com/docs/reference/config-files/actions#createSlice`
++  },
++  "11337": {
++    text: context => `An empty file "${context.componentPath}" was found during slice creation. Please remove it or make it a valid component.`,
++    level: _types.Level.ERROR,
++    category: ErrorCategory.USER,
++    // TODO: change domain to gatsbyjs.com when it's released
++    docsUrl: `https://v5.gatsbyjs.com/docs/reference/config-files/actions#createSlice`
++  },
++  "11338": {
++    text: context => `${context.pluginName} created a slice component without a valid default export.\n\nThe path to the component is "${context.componentPath}". If your component is a named export, please use "export default" instead.`,
++    level: _types.Level.ERROR,
++    category: ErrorCategory.USER,
++    // TODO: change domain to gatsbyjs.com when it's released
++    docsUrl: `https://v5.gatsbyjs.com/docs/reference/config-files/actions#createSlice`
++  },
++  "11339": {
++    text: context => [`Building static HTML failed for slice "${context.sliceName}".`, `Slice metadata: ${JSON.stringify((context === null || context === void 0 ? void 0 : context.sliceData) || {}, null, 2)}`, `Slice props: ${JSON.stringify((context === null || context === void 0 ? void 0 : context.sliceProps) || {}, null, 2)}`].filter(Boolean).join(`\n\n`),
++    level: _types.Level.ERROR,
++    category: ErrorCategory.USER,
++    // TODO: change domain to gatsbyjs.com when it's released
++    docsUrl: `https://v5.gatsbyjs.com/docs/reference/config-files/actions#createSlice`
++  },
++  "11340": {
++    text: context => [`Building static HTML failed for slice "${context.sliceName}".`, `"${context.undefinedGlobal}" is not available during server-side rendering. Enable "DEV_SSR" to debug this during "gatsby develop".`].filter(Boolean).join(`\n\n`),
++    level: _types.Level.ERROR,
++    category: ErrorCategory.USER,
++    // TODO: change domain to gatsbyjs.com when it's released
++    docsUrl: `https://v5.gatsbyjs.com/docs/reference/config-files/actions#createSlice`
++  },
+   // node object didn't pass validation
+   "11467": {
+     text: context => [`The new node didn't pass validation: ${context.validationErrorMessage}`, `Failing node:`, JSON.stringify(context.node, null, 4), `Note: there might be more nodes that failed validation. Output is limited to one node per type of validation failure to limit terminal spam.`, context.codeFrame].filter(Boolean).join(`\n\n`),
+@@ -566,7 +629,7 @@ const errors = {
+   },
+   // Partial hydration rendering errors
+   "80000": {
+-    text: context => (0, _commonTags.stripIndents)(`Building partial HTML failed${context.path ? ` for path "${context.path}"` : ``}
++    text: context => (0, _commonTags.stripIndents)(`Building partial HTML failed${context !== null && context !== void 0 && context.path ? ` for path "${context.path}"` : ``}
+ 
+       This can happen if interactive elements like "useEffect", "useState", "createContext" or event handlers are used in a component without declaring the "client export" directive at the top of the file.
+       
+@@ -575,6 +638,18 @@ const errors = {
+     level: _types.Level.ERROR,
+     docsUrl: `https://gatsby.dev/partial-hydration-error`,
+     category: ErrorCategory.USER
++  },
++  "80001": {
++    text: () => (0, _commonTags.stripIndents)(`
++        Failed to restore previous client module manifest.
++        
++        This can happen if the manifest is corrupted or is not compatible with the current version of Gatsby.
++
++        Please run "gatsby clean" and try again. If the issue persists, please open an issue with a reproduction at https://github.com/gatsbyjs/gatsby/issues/new for more help.
++        `),
++    level: _types.Level.ERROR,
++    docsUrl: `https://gatsby.dev/partial-hydration-error`,
++    category: ErrorCategory.USER
+   }
+ };
+ const errorMap = errors;
