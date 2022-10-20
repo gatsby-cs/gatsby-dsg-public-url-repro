@@ -16,9 +16,9 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "gatsby": "next",
-    "gatsby-plugin-gatsby-cloud": "^4.24.1",
-    "gatsby-source-filesystem": "^4.24.0",
+    "gatsby": "5.0.0-next.4-dev-1666246428620",
+    "gatsby-plugin-gatsby-cloud": "^5.0.0-next.1",
+    "gatsby-source-filesystem": "^5.0.0-next.1",
     "patch-package": "^6.4.7",
     "react": "^18.1.0",
     "react-dom": "^18.1.0"
