@@ -1,8 +1,8 @@
 diff --git a/node_modules/gatsby-source-filesystem/extend-file-node.js b/node_modules/gatsby-source-filesystem/extend-file-node.js
-index 6398ae2..a5e1ca7 100644
+index 6398ae2..f9ce475 100644
 --- a/node_modules/gatsby-source-filesystem/extend-file-node.js
 +++ b/node_modules/gatsby-source-filesystem/extend-file-node.js
-@@ -34,18 +34,19 @@ module.exports = ({
+@@ -34,18 +34,25 @@ module.exports = ({
          const publicPath = path.join(process.cwd(), `public`, `static`, fileName);
  
          if (!fs.existsSync(publicPath)) {
@@ -16,14 +16,19 @@ index 6398ae2..a5e1ca7 100644
 -                  sourceMessage: `error copying file from ${details.absolutePath} to ${publicPath}`
 -                }
 -              }, err);
--            }
--          });
 +          try {
 +            const file = fs.readFileSync(details.absolutePath);
 +            const ensuredDir = path.parse(publicPath).dir;
 +            fs.ensureDirSync(ensuredDir);
 +            fs.writeFileSync(publicPath, file);
 +          } catch (error) {
++            console.log(require(`util`).inspect(error, { depth: Infinity }))
++            if (Array.isArray(error)) {
++              for (const e of error) {
++                console.log({ error: e, stack: e?.stack})
++              }
+             }
+-          });
 +            reporter.panic({
 +              id: prefixId(CODES.MissingResource),
 +              context: {
