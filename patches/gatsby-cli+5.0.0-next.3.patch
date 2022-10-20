@@ -1,0 +1,15 @@
+diff --git a/node_modules/gatsby-cli/lib/structured-errors/construct-error.js b/node_modules/gatsby-cli/lib/structured-errors/construct-error.js
+index 837393e..a94462a 100644
+--- a/node_modules/gatsby-cli/lib/structured-errors/construct-error.js
++++ b/node_modules/gatsby-cli/lib/structured-errors/construct-error.js
+@@ -52,8 +52,8 @@ const constructError = ({
+   } = _errorSchema.errorSchema.validate(structuredError);
+ 
+   if (error) {
+-    console.log(`Failed to validate error`, error);
+-    process.exit(1);
++    console.trace(`Call stack for invalid error`)
++    console.log(`Failed to validate error`, { error, structuredError });
+   }
+ 
+   return structuredError;
