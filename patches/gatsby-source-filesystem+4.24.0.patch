@@ -1,8 +1,8 @@
 diff --git a/node_modules/gatsby-source-filesystem/extend-file-node.js b/node_modules/gatsby-source-filesystem/extend-file-node.js
-index 6398ae2..ff008c5 100644
+index 6398ae2..554dd2a 100644
 --- a/node_modules/gatsby-source-filesystem/extend-file-node.js
 +++ b/node_modules/gatsby-source-filesystem/extend-file-node.js
-@@ -34,18 +34,26 @@ module.exports = ({
+@@ -34,18 +34,31 @@ module.exports = ({
          const publicPath = path.join(process.cwd(), `public`, `static`, fileName);
  
          if (!fs.existsSync(publicPath)) {
@@ -17,10 +17,15 @@ index 6398ae2..ff008c5 100644
 -                }
 -              }, err);
 +          try {
++            console.log(`steps: 1`)
 +            const file = fs.readFileSync(details.absolutePath);
++            console.log(`steps: 2`)
 +            const ensuredDir = path.parse(publicPath).dir;
++            console.log(`steps: 3`)
 +            fs.ensureDirSync(ensuredDir);
++            console.log(`steps: 4`)
 +            fs.writeFileSync(publicPath, file);
++            console.log(`steps: 5`)
 +          } catch (error) {
 +            console.log(`error type`, typeof error)
 +            console.log(require(`util`).inspect({ inspect: error }, { depth: Infinity }))
