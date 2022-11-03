@@ -19,7 +19,7 @@ export default function SSRPage({ data, serverData }) {
 }
 
 export async function getServerData() {
-  return () => {
+  return {
     props: {
       wat: true;
     }
