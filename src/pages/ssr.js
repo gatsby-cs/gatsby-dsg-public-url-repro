@@ -21,7 +21,7 @@ export default function SSRPage({ data, serverData }) {
 export async function getServerData() {
   return {
     props: {
-      wat: true;
+      wat: true
     }
   };
 }
