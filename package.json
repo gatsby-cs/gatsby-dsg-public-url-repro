@@ -13,14 +13,13 @@
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",
-    "postinstall": "patch-package"
+    "postinstall": "npx patch-files@latest"
   },
   "dependencies": {
-    "gatsby": "^5.0.0-next.4",
-    "gatsby-plugin-gatsby-cloud": "^5.0.0-next.1",
-    "gatsby-source-filesystem": "^5.0.0-next.1",
-    "patch-package": "^6.4.7",
-    "react": "^18.1.0",
-    "react-dom": "^18.1.0"
+    "gatsby": "^4.24.7",
+    "gatsby-plugin-gatsby-cloud": "^4.24.1",
+    "gatsby-source-filesystem": "^4.24.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }
